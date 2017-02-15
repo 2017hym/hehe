@@ -1,0 +1,174 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>Document</title>
+</head>	
+<script>
+	class Drag{
+		constructor(obj){
+			this.obj = obj.ele;
+			console.log(this.obj)
+			console.log(obj.rect.minx)
+			this.minx=undefined?null:obj.rect.minx;
+			this.maxx=undefined?null:obj.rect.maxx;
+			this.miny=undefined?null:obj.rect.miny;
+			this.maxy=undefined?null:obj.rect.maxy;
+			this.x=undefined?null:obj.dir.x;
+			this.y=undefined?null:obj.dir.y;
+			this.cw = document.documentElement.clientWidth;
+			this.ch = document.documentElement.clientHeight;
+			this.ow = this.obj.offsetWidth;
+			this.oh = this.obj.offsetHeight;
+			this.ox = 0;
+			this.oy = 0;
+			this.cx = 0;
+			this.cy = 0;
+			this.left = 0;
+			this.top = 0;
+		}
+		drag(){
+			this.down();
+		}
+		down(){
+			var that = this;
+			this.obj.onmousedown=function(e){
+				var ev = e||window.event;
+				var x=box.offsetLeft;
+				var y=box.offsetTop;
+
+				var cx =ev.clientX;
+				var cy =ev.clientY;
+				that.lenx=cx-x;
+				that.leny=cy-y;
+				that.prex=cx-that.lenx;
+				that.prey=cy-that.leny;
+				console.log(that.prex)
+				console.log(that.lenx)
+				if(e.returnValue){			
+					e.returnValue=false;
+				}else{
+					e.preventDefault();
+				}
+				that.ox = ev.offsetX;
+				that.oy = ev.offsetY;
+				that.move();
+				that.up();
+			}		
+		}
+		move(){
+			var that = this;
+			document.onmousemove=function(e){
+				var ev = e||window.event;
+				
+				var cx = ev.clientX;
+				var cy = ev.clientY;
+				that.nextx=cx-that.lenx;
+				that.nexty=cy-that.leny;
+				that.stepx=that.nextx-that.prex;
+				that.stepy=that.nexty-that.prey;
+
+				
+				that.left =cx-that.lenx;
+				that.top =cy-that.leny;
+				console.log(that.cw-that.ow)
+				if(that.left<that.minx){
+					that.left=0;
+				}
+				if(that.top<that.miny){
+					that.top=0;
+				}
+				if(that.left>=that.maxx-that.ow){
+					that.left=that.maxx-that.ow;
+				}
+				if(that.top>=that.maxy-that.oh){
+					that.top=that.maxy-that.oh;
+				}
+				if(that.x){
+					that.obj.style.left = that.left+"px";
+				}
+				if(that.y){
+					that.obj.style.top = that.top+"px";
+				}
+				
+			}
+		}
+		up(){
+			var that = this;
+			document.onmouseup=function(){
+				document.onmousemove=null;
+				document.onmouseup=null;
+				var t=setInterval(function(){
+					var yinzi = 0.5;
+					that.stepx=Math.abs(that.stepx)
+					if(that.stepx>1){
+						that.obj.style.left = that.stepx*=yinzi+"px";
+					}
+					
+					if(that.stepx>1){
+						that.obj.style.top = that.stepy*=yinzi+"px";
+						console.log(1)
+					}
+					if(that.stepx<1&&that.stepy<1){
+						clearInterval(t)
+					}
+				},50)
+				that.prex=that.nextx;
+				that.prey=that.nexty;
+				
+			}
+		}
+	}
+
+
+	window.onload=function(){
+		var box=document.getElementById("box");
+		
+		var newobj= new Drag({
+			ele:box,
+			rect:{
+				minx:0,miny:0,maxx:400,maxy:400
+			},
+			dir:{
+				x:true,
+				y:true
+			}
+		})
+		newobj.drag();
+	}
+
+		
+	
+</script>
+<style>
+	*{
+		margin:0;
+		padding:0;
+		list-style:none;
+	}
+
+	.parent{
+		width:400px;
+		height:400px;
+		background:red;
+		position: fixed;
+		top:100px;
+		left:200px;
+	}
+	#box{
+		width:50px;
+		height:50px;
+		background:blue;
+		position: relative;
+		top:0;
+		left:100px;
+	}
+</style>
+<body>
+	<div class="parent">
+		<div id="box"></div>
+	</div>
+
+	
+</body>
+</html>
